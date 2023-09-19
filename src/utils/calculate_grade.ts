@@ -6,7 +6,8 @@
  *
  * Anything that has a type of "undefined" you will need to replace with something.
  */
-import { IUniversityClass } from "../types/api_types";
+import { IUniversityClass, Assignment } from "../types/api_types";
+import { BASE_API_URL, MY_BU_ID, GET_DEFAULT_HEADERS } from "../globals"
 
 /**
  * This function might help you write the function below.
@@ -14,12 +15,33 @@ import { IUniversityClass } from "../types/api_types";
  * 
  * If you are reading here and you haven't read the top of the file...go back.
  */
-export async function calculateStudentFinalGrade(
-  studentID: string,
-  classAssignments: undefined,
-  klass: IUniversityClass
-): Promise<undefined> {
-  return undefined;
+export async function calculateStudentFinalGrade(studentID: string, klass: IUniversityClass): Promise<number> {
+  const res = await fetch(BASE_API_URL + "/student/listGrades/" + studentID + "/" + klass.classId + "/?buid=" + MY_BU_ID, {
+    method: "GET",
+    headers: GET_DEFAULT_HEADERS()
+  });
+  const json = await res.json();
+  
+
+  const getClassAssignments = async () => {
+    const res = await fetch(BASE_API_URL + "/class/listAssignments/" + klass.classId + "?buid=" + MY_BU_ID, {
+      method: "GET",
+      headers: GET_DEFAULT_HEADERS()
+    });
+    const assignments = await res.json();
+    return assignments;
+  }
+  const assignments: Assignment[] = await getClassAssignments();
+
+  let sum = 0;
+  assignments.forEach((assignment: Assignment) => {
+    const assignmentId = assignment.assignmentId;
+    const weight = assignment.weight;
+    sum+=parseInt(json.grades[0][assignmentId]) * weight/100;
+  });
+  
+
+  return sum;
 }
 
 /**

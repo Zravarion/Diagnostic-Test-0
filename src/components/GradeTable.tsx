@@ -17,5 +17,5 @@ export function dummyData() {
  *
  */
 export const GradeTable = () => {
-  return <></>;
+  return 
 };

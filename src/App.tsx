@@ -6,50 +6,88 @@ import { DataGrid, GridRowsProp, GridColDef } from '@mui/x-data-grid';
 /**
  * You will find globals from this file useful!
  */
-import { BASE_API_URL, GET_DEFAULT_HEADERS } from "./globals";
-import { IUniversityClass, Student } from "./types/api_types";
+import { BASE_API_URL, GET_DEFAULT_HEADERS, MY_BU_ID } from "./globals";
+import { IUniversityClass, Info } from "./types/api_types";
 import { get } from "http";
+import { calculateStudentFinalGrade } from "./utils/calculate_grade";
 
 function App() {
-  // You will need to use more of these!
   const [currClassId, setCurrClassId] = useState<string>("");
   const [classList, setClassList] = useState<IUniversityClass[]>([]);
-  // const [currRows, setRows] = useState<Student[]>()
-  
-  /**
-   * This is JUST an example of how you might fetch some data(with a different API).
-   * As you might notice, this does not show up in your console right now.
-   * This is because the function isn't called by anything!
-   *
-   * You will need to lookup how to fetch data from an API using React.js
-   * Something you might want to look at is the useEffect hook.
-   *g
-   * The useEffect hook will be useful for populating the data in the dropdown box.
-   * You will want to make sure that the effect is only called once at component mount.
-   *
-   * You will also need to explore the use of async/await.
-   *
-   */
-  /*
-  const fetchSomeData = async () => {
-    const res = await fetch("https://cat-fact.herokuapp.com/facts/", {
-      method: "GET",
-    });
-    const json = await res.json();
-    console.log(json);
-  };
-  */
+  let [currRows, setRows] = useState<GridRowsProp[]>([])
+
+  const semester = "fall2022"
+
+  const columns: GridColDef[] = [
+    { field: 'id', headerName: 'Student ID', width: 150 },
+    { field: 'name', headerName: 'Student Name', width: 150 },
+    { field: 'classId', headerName: 'Class ID', width: 150 },
+    { field: 'className', headerName: 'Class Name', width: 150 },
+    { field: 'semester', headerName: 'Semester', width: 150 },
+    { field: 'finalGrade', headerName: 'Final Grade', width: 150 },
+  ];
+
+
 
   useEffect(() => {
     const fetchClassList = async () => {
-      const classes:IUniversityClass[] = await getClasses();
+      const classes: IUniversityClass[] = await getClasses();
       setClassList(classes);
     }
     fetchClassList();
-  },[]);
+  }, []);
+
+  const getClass = async () => {
+    const res = await fetch(BASE_API_URL + "/class/GetById/" + currClassId + "?buid=" + MY_BU_ID, {
+      method: "GET",
+      headers: GET_DEFAULT_HEADERS()
+    });
+    const json = await res.json();
+    return json;
+  }
+
+  useEffect(() => {
+    if (currClassId === "") {
+    }
+    else {
+      var rows: any[] = [];
+      const fetchInfo = async (id: string) => {
+        const res = await fetch(BASE_API_URL + "/student/listGrades/" + id + "/" + currClassId + "/?buid=" + MY_BU_ID, {
+          method: "GET",
+          headers: GET_DEFAULT_HEADERS()
+        });
+        const json = await res.json();
+        const c = await getClass();
+        let row = { id: id, name: json.name, classId: currClassId, className: c.title, semester: semester, finalGrade: calculateStudentFinalGrade(id, c) };
+        return row;
+      }
+      const getBUIDs = async () => {
+        const res = await fetch(BASE_API_URL + "/class/listStudents/" + currClassId + "?buid=" + MY_BU_ID, {
+          method: "GET",
+          headers: GET_DEFAULT_HEADERS()
+        });
+        const json = await res.json();
+        return json;
+      }
+      const getRows = async () => {
+        const buids: string[] = await getBUIDs();
+        buids.forEach(async (element: string) => {
+          const row = await fetchInfo(element);
+          rows = Object.assign([], rows)
+          console.log(rows)
+          rows.push(row);
+        });
+      }
+      console.log(rows)
+      getRows();
+      //console.log(rows)
+      setRows(rows);
+
+    }
+  }, [currClassId])
 
   const getClasses = async () => {
-    const res = await fetch(BASE_API_URL+"/class/listBySemester/fall2022?buid=U67819144",{
+    const res = await fetch(BASE_API_URL + "/class/listBySemester/fall2022?buid=U67819144", {
       method: "GET",
       headers: GET_DEFAULT_HEADERS()
     });
@@ -69,13 +107,15 @@ function App() {
     return json;
   }
   const opts = classList.map(item => {
-    return{value: item.classId,label: item.title}
+    return { value: item.classId, label: item.title }
   });
 
-  const handleSelectChange = (e:SelectChangeEvent) => {
+  const handleSelectChange = (e: SelectChangeEvent) => {
     const newValue = e.target.value;
     setCurrClassId(newValue);
   };
+
+  const rows: GridRowsProp[] = currRows;
 
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
@@ -91,10 +131,10 @@ function App() {
           </Typography>
           <div style={{ width: "100%" }}>
             {
-            <Select value = {currClassId} fullWidth={true} label="Class" onChange={handleSelectChange}>
-              {classList.map((item) => (
-                <MenuItem value={item.classId} key={item.classId}>{item.title}</MenuItem>))}
-            </Select>
+              <Select value={currClassId} fullWidth={true} label="Class" onChange={handleSelectChange}>
+                {classList.map((item) => (
+                  <MenuItem value={item.classId} key={item.classId}>{item.title}</MenuItem>))}
+              </Select>
             }
           </div>
         </Grid>
@@ -102,7 +142,10 @@ function App() {
           <Typography variant="h4" gutterBottom>
             Final Grades
           </Typography>
-          <div>Place the grade table here</div>
+          <div>
+            Grade Table
+            <DataGrid rows={currRows} columns={columns}/>
+          </div>
         </Grid>
       </Grid>
     </div>

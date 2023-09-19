@@ -18,12 +18,22 @@ export interface IUniversityClass {
   semester: string;
 }
 
-export interface Student {
-  universityId: string;
-  name:         string;
-  dateEnrolled: Date;
-  status:       string;
+
+
+export interface Info {
+  classId:   string;
+  studentId: string;
+  name:      string;
+  grades:    string[];
 }
+
+export interface Assignment {
+  assignmentId: string;
+  classId:      string;
+  date:         string;
+  weight:       number;
+}
+
 
 
 
