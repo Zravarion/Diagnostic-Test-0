@@ -39,6 +39,8 @@ export async function calculateStudentFinalGrade(studentID: string, klass: IUniv
     const weight = assignment.weight;
     sum+=parseInt(json.grades[0][assignmentId]) * weight/100;
   });
+
+  sum = Math.round(sum*10)/10
   
 
   return sum;

@@ -15,7 +15,7 @@ import {GradeTable} from "./components/GradeTable"
 function App() {
   const [currClassId, setCurrClassId] = useState<string>("");
   const [classList, setClassList] = useState<IUniversityClass[]>([]);
-  let [currRows, setRows] = useState<GridRowsProp[]>([])
+  const [currRows, setRows] = useState<any[]>([])
 
   const semester = "fall2022"
 
@@ -27,8 +27,6 @@ function App() {
     { field: 'semester', headerName: 'Semester', width: 150 },
     { field: 'finalGrade', headerName: 'Final Grade', width: 150 },
   ];
-
-
 
   useEffect(() => {
     const fetchClassList = async () => {
@@ -51,7 +49,7 @@ function App() {
     if (currClassId === "") {
     }
     else {
-      var rows: any[] = [];
+      
       const fetchInfo = async (id: string) => {
         const res = await fetch(BASE_API_URL + "/student/listGrades/" + id + "/" + currClassId + "/?buid=" + MY_BU_ID, {
           method: "GET",
@@ -59,7 +57,7 @@ function App() {
         });
         const json = await res.json();
         const c = await getClass();
-        let row = { id: id, name: json.name, classId: currClassId, className: c.title, semester: semester, finalGrade: calculateStudentFinalGrade(id, c) };
+        let row = { id: id, name: json.name, classId: currClassId, className: c.title, semester: semester, finalGrade: await calculateStudentFinalGrade(id, c) };
         return row;
       }
       const getBUIDs = async () => {
@@ -70,20 +68,19 @@ function App() {
         const json = await res.json();
         return json;
       }
+      
       const getRows = async () => {
         const buids: string[] = await getBUIDs();
-
-        
-        buids.forEach(async (element: string) => {
+        let rows:any[] = [];
+        buids.forEach(async(element: string) => {
           const row = await fetchInfo(element);
-          //rows = Object.assign([], rows)
-          rows.push(row);
+          rows = Object.assign([],rows)
+          rows.push(row)
+          setRows(rows)
         });
-        console.log(rows)
-        return rows;
       }
       getRows();
-      setRows(rows);
+      
       GradeTable(currRows,columns);
     }
   }, [currClassId])
@@ -106,7 +103,7 @@ function App() {
     GradeTable(currRows,columns);
   };
 
-  const rows: GridRowsProp[] = currRows;
+  
 
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
@@ -133,7 +130,7 @@ function App() {
           <Typography variant="h4" gutterBottom>
             Final Grades
           </Typography>
-          <div style={{height: '100%',width:'100%'}}>
+          <div style={{height: 700,width:'100%'}}>
             Grade Table
             <DataGrid rows={currRows} columns={columns}/>
           </div>
