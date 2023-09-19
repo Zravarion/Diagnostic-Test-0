@@ -5,6 +5,7 @@
  * When you come to office hours for help, we will ask you if you have written
  * this function and tested your project using it.
  */
+import { DataGrid, GridRowsProp, GridColDef } from '@mui/x-data-grid';
 export function dummyData() {
   return [];
 }
@@ -16,6 +17,10 @@ export function dummyData() {
  * You might need to change the signature of this function.
  *
  */
-export const GradeTable = () => {
-  return 
+export const GradeTable = (currRows:any,columns:any) => {
+  function remakeTable(){
+    return(
+      <DataGrid rows={currRows} columns={columns}/>
+    );
+  }
 };

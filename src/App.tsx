@@ -10,6 +10,7 @@ import { BASE_API_URL, GET_DEFAULT_HEADERS, MY_BU_ID } from "./globals";
 import { IUniversityClass, Info } from "./types/api_types";
 import { get } from "http";
 import { calculateStudentFinalGrade } from "./utils/calculate_grade";
+import {GradeTable} from "./components/GradeTable"
 
 function App() {
   const [currClassId, setCurrClassId] = useState<string>("");
@@ -71,18 +72,19 @@ function App() {
       }
       const getRows = async () => {
         const buids: string[] = await getBUIDs();
+
+        
         buids.forEach(async (element: string) => {
           const row = await fetchInfo(element);
-          rows = Object.assign([], rows)
-          console.log(rows)
+          //rows = Object.assign([], rows)
           rows.push(row);
         });
+        console.log(rows)
+        return rows;
       }
-      console.log(rows)
       getRows();
-      //console.log(rows)
       setRows(rows);
-
+      GradeTable(currRows,columns);
     }
   }, [currClassId])
 
@@ -92,18 +94,6 @@ function App() {
       headers: GET_DEFAULT_HEADERS()
     });
     const json = await res.json();
-    /*
-    const classes: IUniversityClass[] = json.map((data:any) => {
-      return {
-        classId: data.classId,
-        title: data.title,
-        description: data.description,
-        meetingTime: data.meetingTime,
-        meetingLocation: data.meetingLocation,
-        status: data.status,
-        semester: data.semester,
-      };
-    });*/
     return json;
   }
   const opts = classList.map(item => {
@@ -113,6 +103,7 @@ function App() {
   const handleSelectChange = (e: SelectChangeEvent) => {
     const newValue = e.target.value;
     setCurrClassId(newValue);
+    GradeTable(currRows,columns);
   };
 
   const rows: GridRowsProp[] = currRows;
@@ -129,7 +120,7 @@ function App() {
           <Typography variant="h4" gutterBottom>
             Select a class
           </Typography>
-          <div style={{ width: "100%" }}>
+          <div style={{ width: "100%" ,height:"100"}}>
             {
               <Select value={currClassId} fullWidth={true} label="Class" onChange={handleSelectChange}>
                 {classList.map((item) => (
@@ -142,7 +133,7 @@ function App() {
           <Typography variant="h4" gutterBottom>
             Final Grades
           </Typography>
-          <div>
+          <div style={{height: '100%',width:'100%'}}>
             Grade Table
             <DataGrid rows={currRows} columns={columns}/>
           </div>
