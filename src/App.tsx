@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from "react";
 import Grid from "@mui/material/Unstable_Grid2";
-import { Menu, MenuItem, Select, SelectChangeEvent, Typography } from "@mui/material";
-import { DataGrid, GridRowsProp, GridColDef } from '@mui/x-data-grid';
+import { MenuItem, Select, SelectChangeEvent, Typography } from "@mui/material";
+import { DataGrid, GridColDef } from '@mui/x-data-grid';
 
 /**
  * You will find globals from this file useful!
  */
 import { BASE_API_URL, GET_DEFAULT_HEADERS, MY_BU_ID } from "./globals";
 import { IUniversityClass, Info } from "./types/api_types";
-import { get } from "http";
 import { calculateStudentFinalGrade } from "./utils/calculate_grade";
 import {GradeTable} from "./components/GradeTable"
 
@@ -93,10 +92,6 @@ function App() {
     const json = await res.json();
     return json;
   }
-  const opts = classList.map(item => {
-    return { value: item.classId, label: item.title }
-  });
-
   const handleSelectChange = (e: SelectChangeEvent) => {
     const newValue = e.target.value;
     setCurrClassId(newValue);
