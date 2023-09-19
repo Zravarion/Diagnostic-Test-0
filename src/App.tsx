@@ -131,7 +131,7 @@ function App() {
             Final Grades
           </Typography>
           <div style={{height: 700,width:'100%'}}>
-            Grade Table
+            
             <DataGrid rows={currRows} columns={columns}/>
           </div>
         </Grid>
